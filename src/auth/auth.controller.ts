@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common'
 import { Request as IRequest } from 'express'
 import { AuthService } from './auth.service'
-import { LocalAuthGuard } from 'src/guards'
+import { JwtAuthGuard, LocalAuthGuard } from 'src/guards'
 import { UserDocument } from 'src/users/schemas'
 import { RegisterUserDto } from './dto'
 import { IAuthResponse } from './interfaces'
@@ -18,6 +18,11 @@ import { IAuthResponse } from './interfaces'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  register(@Body() userData: RegisterUserDto): Promise<IAuthResponse> {
+    return this.authService.register(userData)
+  }
+
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -25,8 +30,11 @@ export class AuthController {
     return this.authService.login(req.user as UserDocument)
   }
 
-  @Post('register')
-  register(@Body() userData: RegisterUserDto): Promise<IAuthResponse> {
-    return this.authService.register(userData)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  logout(@Request() req: IRequest): Promise<{ message: string }> {
+    const user = req.user as UserDocument
+    return this.authService.logout(user.id)
   }
 }

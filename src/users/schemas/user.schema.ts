@@ -29,7 +29,7 @@ export class User {
     type: String,
     default: null,
   })
-  token: string | null
+  access_token: string | null
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

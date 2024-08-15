@@ -18,10 +18,10 @@ export class AuthService {
   private async generateAndUpdateToken(
     id: UserDocument['id'],
   ): Promise<string> {
-    const token = this.jwtService.sign({ id })
-    await this.userModel.findByIdAndUpdate(id, { token })
+    const access_token = this.jwtService.sign({ id })
+    await this.userModel.findByIdAndUpdate(id, { access_token })
 
-    return token
+    return access_token
   }
 
   async normalizedEmailAndFindUser(email: RegisterUserDto['email']) {
@@ -51,11 +51,11 @@ export class AuthService {
       subscription,
     })
 
-    const token = await this.generateAndUpdateToken(user._id)
+    const access_token = await this.generateAndUpdateToken(user._id)
 
     return {
       message: 'Registration successful',
-      token,
+      access_token,
       user: {
         id: user._id,
         email: user.email,
@@ -65,16 +65,22 @@ export class AuthService {
   }
 
   async login(user: UserDocument): Promise<IAuthResponse> {
-    const token = await this.generateAndUpdateToken(user._id)
+    const access_token = await this.generateAndUpdateToken(user._id)
 
     return {
       message: 'Login successful',
-      token,
+      access_token,
       user: {
         id: user._id,
         email: user.email,
         subscription: user.subscription,
       },
     }
+  }
+
+  async logout(id: Pick<UserDocument, 'id'>): Promise<{ message: string }> {
+    console.log('id :>> ', id)
+    await this.userModel.findByIdAndUpdate(id, { access_token: null })
+    return { message: 'Logout successful' }
   }
 }
