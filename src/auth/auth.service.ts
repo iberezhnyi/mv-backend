@@ -3,21 +3,22 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { User, UserDocument } from 'src/users/schemas'
+// import { User, UserDocument } from 'src/users/schemas'
 import { RegisterUserDto } from './dto'
 import { IAuthResponse } from './interfaces'
+import { UserModel } from 'src/users/schemas'
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(UserModel.name) private readonly userModel: Model<UserModel>,
 
     private readonly jwtService: JwtService,
   ) {}
 
   private async generateAndUpdateToken(
-    id: UserDocument['id'],
-  ): Promise<string> {
+    id: UserModel['id'],
+  ): Promise<IAuthResponse['access_token']> {
     const access_token = this.jwtService.sign({ id })
     await this.userModel.findByIdAndUpdate(id, { access_token })
 
@@ -64,7 +65,7 @@ export class AuthService {
     }
   }
 
-  async login(user: UserDocument): Promise<IAuthResponse> {
+  async login(user: UserModel): Promise<IAuthResponse> {
     const access_token = await this.generateAndUpdateToken(user._id)
 
     return {
@@ -78,7 +79,7 @@ export class AuthService {
     }
   }
 
-  async logout(id: Pick<UserDocument, 'id'>): Promise<{ message: string }> {
+  async logout(id: Pick<UserModel, 'id'>): Promise<{ message: string }> {
     console.log('id :>> ', id)
     await this.userModel.findByIdAndUpdate(id, { access_token: null })
     return { message: 'Logout successful' }

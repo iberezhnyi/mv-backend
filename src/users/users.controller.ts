@@ -1,19 +1,20 @@
 import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common'
 import { UsersService } from './users.service'
-import { UserDocument } from './schemas'
+// import { UserDocument } from './schemas'
 import { UpdateUserDto } from './dto'
+import { UserModel } from './schemas'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll(): Promise<UserDocument[]> {
+  findAll(): Promise<UserModel[]> {
     return this.usersService.findAll()
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<UserDocument> {
+  findOne(@Param('id') id: string): Promise<UserModel> {
     return this.usersService.findOne(id)
   }
 
@@ -21,7 +22,7 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserDocument> {
+  ): Promise<UserModel> {
     return this.usersService.update(id, updateUserDto)
   }
 

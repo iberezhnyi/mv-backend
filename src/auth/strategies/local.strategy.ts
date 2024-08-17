@@ -3,8 +3,9 @@ import { Strategy } from 'passport-local'
 import { PassportStrategy } from '@nestjs/passport'
 import * as bcrypt from 'bcrypt'
 import { AuthService } from '../auth.service'
-import { UserDocument } from 'src/users/schemas'
+// import { UserDocument } from 'src/users/schemas'
 import { LoginDto } from '../dto'
+import { UserModel } from 'src/users/schemas'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -15,7 +16,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   async validate(
     email: LoginDto['email'],
     password: LoginDto['password'],
-  ): Promise<UserDocument> {
+  ): Promise<UserModel> {
     const { user } = await this.authService.normalizedEmailAndFindUser(email)
 
     if (user === null) {

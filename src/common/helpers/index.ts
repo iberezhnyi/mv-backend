@@ -1,0 +1,1 @@
+export { getDaysInMonth } from './getDaysInMonth'

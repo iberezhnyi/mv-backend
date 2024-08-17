@@ -1,10 +1,14 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService } from '@nestjs/config'
-import { getMongoConfig } from './configs'
-import { LoggerMiddleware } from './middlewares'
+import { getMongoConfig } from './common/configs'
+import { LoggerMiddleware } from './common/middlewares'
 import { AuthModule } from './auth'
 import { UsersModule } from './users'
+import { MonthsModule } from './months/months.module'
+import { WeeksModule } from './weeks/weeks.module'
+import { TasksModule } from './tasks/tasks.module'
+import { NotesModule } from './notes/notes.module'
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { UsersModule } from './users'
     }),
     AuthModule,
     UsersModule,
+    MonthsModule,
+    WeeksModule,
+    TasksModule,
+    NotesModule,
   ],
 })
 export class AppModule implements NestModule {

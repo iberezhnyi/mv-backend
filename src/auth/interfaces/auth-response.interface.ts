@@ -1,9 +1,9 @@
-import { UserDocument } from 'src/users/schemas'
+import { UserModel } from 'src/users/schemas'
 
-interface IUser extends Partial<UserDocument> {}
+interface IUser extends Partial<UserModel> {}
 
 export interface IAuthResponse {
   message: string
-  access_token: string
+  access_token: UserModel['access_token']
   user: IUser
 }

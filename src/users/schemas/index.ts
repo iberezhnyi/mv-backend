@@ -1,3 +1,2 @@
-export { User } from './user.schema'
-export { UserDocument } from './user.schema'
-export { UserSchema } from './user.schema'
+export { UserModel } from './user.schema'
+export { UserModelSchema } from './user.schema'

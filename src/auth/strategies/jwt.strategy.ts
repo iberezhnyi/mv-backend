@@ -5,13 +5,15 @@ import { ConfigService } from '@nestjs/config'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Request } from 'express'
-import { User, UserDocument } from 'src/users/schemas'
+import { UserModel } from 'src/users/schemas'
+// import { User, UserDocument } from 'src/users/schemas'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(UserModel.name)
+    private readonly userModel: Model<UserModel>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -23,8 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(
     req: Request,
-    payload: Pick<UserDocument, 'id'>,
-  ): Promise<UserDocument> {
+    payload: Pick<UserModel, 'id'>,
+  ): Promise<UserModel> {
     const user = await this.userModel.findById(payload.id)
 
     if (user === null) {
