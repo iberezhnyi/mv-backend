@@ -23,7 +23,7 @@ export class NotesService {
     })
 
     return {
-      message: 'Note created',
+      message: 'Note created successfully',
       note,
       owner: { id: user.id, email: user.email },
     }

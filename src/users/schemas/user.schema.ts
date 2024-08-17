@@ -28,6 +28,13 @@ export class UserModel extends Document {
     default: null,
   })
   access_token: string | null
+
+  @Prop({
+    type: [String],
+    enum: ['user', 'admin'],
+    default: ['user'],
+  })
+  roles: string[]
 }
 
 export const UserModelSchema = SchemaFactory.createForClass(UserModel)

@@ -6,6 +6,7 @@ import { TaskModel } from './schemas'
 import { Model } from 'mongoose'
 import { UpdateTaskCompletionDto } from './dto/update-task-completion.dto'
 import { UserModel } from 'src/users/schemas'
+import { ITaskResponse } from './interfaces'
 
 interface ICompleteTask {
   updateTaskData: UpdateTaskCompletionDto
@@ -18,13 +19,22 @@ export class TasksService {
     @InjectModel(TaskModel.name) private readonly taskModel: Model<TaskModel>,
   ) {}
 
-  createTask(createTaskData: CreateTaskDto) {
-    const task = this.taskModel.create({
+  async createTask(createTaskData: CreateTaskDto): Promise<ITaskResponse> {
+    const task = await this.taskModel.create({
       ...createTaskData,
-      completedBy: {}, // Изначально никто не выполнил задачу
+      completedBy: {},
     })
 
-    return task
+    return {
+      message: 'Task created successfully',
+      task: {
+        id: task._id,
+        type: task.type,
+        title: task.title,
+        description: task.description,
+        date: task.date,
+      },
+    }
   }
 
   findAll() {
@@ -72,7 +82,7 @@ export class TasksService {
     }
   }
 
-  remove(id: number) {
+  removeTask(id: number) {
     return `This action removes a #${id} task`
   }
 }

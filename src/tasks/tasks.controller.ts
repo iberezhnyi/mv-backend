@@ -12,10 +12,12 @@ import {
 import { TasksService } from './tasks.service'
 import { CreateTaskDto } from './dto/create-task.dto'
 import { UpdateTaskCompletionDto } from './dto/update-task-completion.dto'
-import { JwtAuthGuard } from 'src/common/guards'
+import { JwtAuthGuard, RolesGuard } from 'src/common/guards'
 // import { UpdateTaskDto } from './dto/update-task.dto'
 import { Request as IRequest } from 'express'
 import { UserModel } from 'src/users/schemas'
+import { Roles } from 'src/common/decorators'
+import { ITaskResponse } from './interfaces'
 
 interface ICompleteTask {
   updateTaskData: UpdateTaskCompletionDto
@@ -26,8 +28,12 @@ interface ICompleteTask {
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
-  async createTask(@Body() createTaskData: CreateTaskDto) {
+  async createTask(
+    @Body() createTaskData: CreateTaskDto,
+  ): Promise<ITaskResponse> {
     return this.tasksService.createTask(createTaskData)
   }
 
@@ -54,7 +60,7 @@ export class TasksController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(+id)
+  removeTask(@Param('id') id: string) {
+    return this.tasksService.removeTask(+id)
   }
 }

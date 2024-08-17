@@ -1,6 +1,8 @@
 import { UserModel } from 'src/users/schemas'
 
-interface IUser extends Partial<UserModel> {}
+interface IUser extends Partial<UserModel> {
+  role: string
+}
 
 export interface IAuthResponse {
   message: string
