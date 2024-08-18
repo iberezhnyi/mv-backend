@@ -4,5 +4,7 @@ interface ITask extends Partial<TaskModel> {}
 
 export interface ITaskResponse {
   message: string
-  task: ITask
+  email?: string
+  task?: Omit<ITask, 'completedBy'>
+  tasks?: ITask[]
 }

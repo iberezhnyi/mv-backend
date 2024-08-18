@@ -10,23 +10,29 @@ import {
   Request,
 } from '@nestjs/common'
 import { TasksService } from './tasks.service'
-import { CreateTaskDto } from './dto/create-task.dto'
-import { UpdateTaskCompletionDto } from './dto/update-task-completion.dto'
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards'
-// import { UpdateTaskDto } from './dto/update-task.dto'
 import { Request as IRequest } from 'express'
-import { UserModel } from 'src/users/schemas'
 import { Roles } from 'src/common/decorators'
-import { ITaskResponse } from './interfaces'
-
-interface ICompleteTask {
-  updateTaskData: UpdateTaskCompletionDto
-  user: UserModel
-}
+import { CreateTaskDto, UpdateTaskDto } from './dto'
+import { ITaskResponse, IUpdateTask } from './interfaces'
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get()
+  async findAll(): Promise<ITaskResponse> {
+    return this.tasksService.findAll()
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get(':id')
+  async findOne(@Param('id') taskId: string): Promise<ITaskResponse> {
+    return this.tasksService.findOne(taskId)
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -37,30 +43,35 @@ export class TasksController {
     return this.tasksService.createTask(createTaskData)
   }
 
-  @Get()
-  findAll() {
-    return this.tasksService.findAll()
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id)
-  }
-
   @UseGuards(JwtAuthGuard)
   @Patch()
   async completeTask(
     @Request() req: IRequest,
-    @Body() updateTaskData: UpdateTaskCompletionDto,
-  ) {
+    @Body() updateTaskData: UpdateTaskDto,
+  ): Promise<ITaskResponse> {
     return this.tasksService.completeTask({
       updateTaskData,
       user: req.user,
-    } as ICompleteTask)
+    } as IUpdateTask)
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Patch(':id')
+  async updateTask(
+    @Param('id') taskId: string,
+    @Body() updateTaskData: UpdateTaskDto,
+  ): Promise<ITaskResponse> {
+    return this.tasksService.updateTask({
+      taskId,
+      updateTaskData,
+    } as IUpdateTask)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
-  removeTask(@Param('id') id: string) {
-    return this.tasksService.removeTask(+id)
+  async removeTask(@Param('id') taskId: string): Promise<ITaskResponse> {
+    return this.tasksService.removeTask(taskId)
   }
 }

@@ -8,6 +8,12 @@ import {
 import { Type } from 'class-transformer'
 
 export class CreateTaskDto {
+  @IsEnum(['daily', 'weekly', 'monthly'], {
+    message: 'Type must be one of the following values: daily, weekly, monthly',
+  })
+  @IsNotEmpty()
+  type: 'daily' | 'weekly' | 'monthly'
+
   @IsString()
   @IsNotEmpty()
   title: string
@@ -20,8 +26,4 @@ export class CreateTaskDto {
   @IsNotEmpty()
   @Type(() => Date)
   date: Date
-
-  @IsEnum(['daily', 'weekly', 'monthly'])
-  @IsNotEmpty()
-  type: 'daily' | 'weekly' | 'monthly'
 }

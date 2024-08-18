@@ -1,23 +1,55 @@
-import { Injectable } from '@nestjs/common'
-import { CreateTaskDto } from './dto/create-task.dto'
-// import { UpdateTaskDto } from './dto/update-task.dto'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { TaskModel } from './schemas'
-import { Model } from 'mongoose'
-import { UpdateTaskCompletionDto } from './dto/update-task-completion.dto'
-import { UserModel } from 'src/users/schemas'
-import { ITaskResponse } from './interfaces'
-
-interface ICompleteTask {
-  updateTaskData: UpdateTaskCompletionDto
-  user: UserModel
-}
+import { isValidObjectId, Model } from 'mongoose'
+import { ITaskResponse, IUpdateTask } from './interfaces'
+import { CreateTaskDto } from './dto'
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectModel(TaskModel.name) private readonly taskModel: Model<TaskModel>,
   ) {}
+
+  async findAll(): Promise<ITaskResponse> {
+    const tasks = await this.taskModel
+      .find()
+      .select('-createdAt -updatedAt -__v')
+      .exec()
+
+    return {
+      message: 'Tasks fetched successfully',
+      tasks,
+    }
+  }
+
+  async findOne(taskId: string): Promise<ITaskResponse> {
+    if (!isValidObjectId(taskId)) {
+      throw new BadRequestException('Invalid Task ID')
+    }
+
+    const task = await this.taskModel.findById(taskId).exec()
+
+    if (task === null) {
+      throw new NotFoundException('Task not found')
+    }
+
+    return {
+      message: 'Task fetched successfully',
+      task: {
+        id: task._id,
+        type: task.type,
+        title: task.title,
+        description: task.description,
+        date: task.date,
+      },
+    }
+  }
 
   async createTask(createTaskData: CreateTaskDto): Promise<ITaskResponse> {
     const task = await this.taskModel.create({
@@ -37,34 +69,34 @@ export class TasksService {
     }
   }
 
-  findAll() {
-    return `This action returns all tasks`
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} task`
-  }
-
-  async completeTask({ updateTaskData, user }: ICompleteTask) {
+  async completeTask({
+    updateTaskData,
+    user,
+  }: IUpdateTask): Promise<ITaskResponse> {
     const { taskId } = updateTaskData
+
+    if (user === undefined) {
+      throw new UnauthorizedException('User not found')
+    }
+
     const { id: userId, email } = user
 
     const task = await this.taskModel.findById(taskId)
 
     if (task === null) {
-      throw new Error('Task not found')
+      throw new NotFoundException('Task not found')
     }
 
-    const isCompleted = task.completedBy.get(userId)
+    const isCompleted = task.completedBy.get(userId) ?? false
 
-    let message: string
+    const message = isCompleted
+      ? 'Task removed from completed list'
+      : 'Task successfully completed'
 
     if (isCompleted) {
       task.completedBy.delete(userId)
-      message = 'Task removed from completed list'
     } else {
       task.completedBy.set(userId, true)
-      message = 'Task successfully completed'
     }
 
     await task.save()
@@ -74,15 +106,64 @@ export class TasksService {
       email,
       task: {
         _id: task._id,
+        type: task.type,
         title: task.title,
         description: task.description,
         date: task.date,
-        type: task.type,
       },
     }
   }
 
-  removeTask(id: number) {
-    return `This action removes a #${id} task`
+  async updateTask({
+    taskId,
+    updateTaskData,
+  }: IUpdateTask): Promise<ITaskResponse> {
+    if (!isValidObjectId(taskId)) {
+      throw new BadRequestException('Invalid Task ID')
+    }
+
+    const task = await this.taskModel.findByIdAndUpdate(
+      taskId,
+      updateTaskData,
+      { new: true },
+    )
+
+    if (task === null) {
+      throw new NotFoundException('Task not found')
+    }
+
+    return {
+      message: 'Task updated successfully',
+      task: {
+        id: task._id,
+        type: task.type,
+        title: task.title,
+        description: task.description,
+        date: task.date,
+      },
+    }
+  }
+
+  async removeTask(taskId: string): Promise<ITaskResponse> {
+    if (!isValidObjectId(taskId)) {
+      throw new BadRequestException('Invalid Task ID')
+    }
+
+    const task = await this.taskModel.findByIdAndDelete(taskId)
+
+    if (task === null) {
+      throw new NotFoundException('Task not found')
+    }
+
+    return {
+      message: 'Task successfully removed',
+      task: {
+        id: task._id,
+        type: task.type,
+        title: task.title,
+        description: task.description,
+        date: task.date,
+      },
+    }
   }
 }
