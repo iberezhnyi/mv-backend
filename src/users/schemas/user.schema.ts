@@ -35,6 +35,12 @@ export class UserModel extends Document {
     default: null,
   })
   access_token: string | null
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  refresh_token: string | null
 }
 
 export const UserModelSchema = SchemaFactory.createForClass(UserModel)

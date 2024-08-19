@@ -7,5 +7,6 @@ interface IUser extends Partial<UserModel> {
 export interface IAuthResponse {
   message: string
   access_token: UserModel['access_token']
+  refresh_token?: UserModel['refresh_token']
   user: IUser
 }
