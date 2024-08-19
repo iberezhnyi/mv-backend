@@ -5,16 +5,16 @@ import { UserModel } from 'src/users/schemas'
 @Schema({ collection: 'notes', timestamps: true })
 export class NoteModel extends Document {
   @Prop({
-    required: [true, 'Note is required'],
-    type: String,
-  })
-  note: string
-
-  @Prop({
     required: [true, 'Date is required'],
     type: Date,
   })
   date: string
+
+  @Prop({
+    required: [true, 'Note is required'],
+    type: String,
+  })
+  note: string
 
   @Prop({
     type: Types.ObjectId,

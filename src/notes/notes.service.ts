@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { NoteModel } from './schemas'
 import { Model } from 'mongoose'
-// import { UserDocument } from 'src/users/schemas'
-import { CreateNoteDto } from './dto'
-import { UserModel } from 'src/users/schemas'
+import { INoteResponse, INoteUpdate } from './interfaces'
 
 @Injectable()
 export class NotesService {
@@ -13,8 +15,12 @@ export class NotesService {
     private readonly noteModel: Model<NoteModel>,
   ) {}
 
-  async createNote(noteData: CreateNoteDto, user: UserModel) {
+  async createNote({ noteData, user }: INoteUpdate): Promise<INoteResponse> {
     const { note: noteFromData, date } = noteData
+
+    if (user === undefined) {
+      throw new UnauthorizedException('User not found')
+    }
 
     const note = await this.noteModel.create({
       note: noteFromData,
@@ -24,8 +30,68 @@ export class NotesService {
 
     return {
       message: 'Note created successfully',
-      note,
-      owner: { id: user.id, email: user.email },
+      note: {
+        id: note.id,
+        date: note.date,
+        note: note.note,
+      },
+      owner: {
+        id: user.id,
+        email: user.email,
+      },
+    }
+  }
+
+  async updateNote({
+    noteId,
+    noteData,
+    user,
+  }: INoteUpdate): Promise<INoteResponse> {
+    const note = await this.noteModel.findOneAndUpdate(
+      { _id: noteId, owner: user.id },
+      { $set: noteData },
+      { new: true },
+    )
+
+    if (note === null) {
+      throw new NotFoundException('Note not found or not owned by user')
+    }
+
+    return {
+      message: 'Note updated successfully',
+      note: {
+        id: note.id,
+        date: note.date,
+        note: note.note,
+      },
+      owner: {
+        id: user.id,
+        email: user.email,
+      },
+    }
+  }
+
+  async deleteNote({ noteId, user }: INoteUpdate): Promise<INoteResponse> {
+    const note = await this.noteModel.findOneAndDelete({
+      _id: noteId,
+      owner: user.id,
+    })
+
+    if (note === null) {
+      throw new NotFoundException('Note not found or not owned by user')
+    }
+
+    return {
+      message: 'Note deleted successfully',
+      note: {
+        id: note.id,
+        date: note.date,
+        note: note.note,
+      },
+      owner: {
+        id: user.id,
+        email: user.email,
+      },
     }
   }
 }
