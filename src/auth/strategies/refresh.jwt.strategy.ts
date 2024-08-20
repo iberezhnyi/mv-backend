@@ -14,11 +14,16 @@ export class RefreshJwtStrategy extends PassportStrategy(
 ) {
   constructor(
     private readonly configService: ConfigService,
+
     @InjectModel(UserModel.name)
     private readonly userModel: Model<UserModel>,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromBodyField('refresh'),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          return req.cookies['refresh_token'] // Извлечение рефреш токена из куков
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('REFRESH_JWT_SECRET'),
       passReqToCallback: true,
@@ -35,7 +40,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
       throw new UnauthorizedException('User not found!!!!')
     }
 
-    const refreshToken = req.body.refresh
+    const refreshToken = req.cookies['refresh_token']
 
     if (user.refresh_token !== refreshToken) {
       throw new UnauthorizedException('Invalid refresh token')

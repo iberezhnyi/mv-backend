@@ -7,6 +7,7 @@ import { RegisterUserDto } from './dto'
 import { IAuthResponse } from './interfaces'
 import { UserModel } from 'src/users/schemas'
 import { ConfigService } from '@nestjs/config'
+import { Response } from 'express'
 
 @Injectable()
 export class AuthService {
@@ -25,12 +26,13 @@ export class AuthService {
     const refresh_token = this.jwtService.sign(
       { id },
       {
-        expiresIn: '30m',
+        expiresIn: '7d',
         secret: this.configService.get<string>('REFRESH_JWT_SECRET'),
       },
     )
 
-    await this.userModel.findByIdAndUpdate(id, { access_token, refresh_token })
+    // Обновляем только refresh_token в базе данных
+    await this.userModel.findByIdAndUpdate(id, { refresh_token, access_token })
 
     return { access_token, refresh_token }
   }
@@ -44,7 +46,10 @@ export class AuthService {
     return { user, normalizedEmail }
   }
 
-  async register(userData: RegisterUserDto): Promise<IAuthResponse> {
+  async register(
+    userData: RegisterUserDto,
+    res: Response,
+  ): Promise<IAuthResponse> {
     const { email, password, subscription } = userData
 
     const { user: emailExist, normalizedEmail } =
@@ -66,10 +71,17 @@ export class AuthService {
       user._id,
     )
 
+    // Устанавливаем refresh_token в куки
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    })
+
     return {
       message: 'Registration successful',
       access_token,
-      refresh_token,
+      // refresh_token,
       user: {
         id: user._id,
         email: user.email,
@@ -79,15 +91,22 @@ export class AuthService {
     }
   }
 
-  async login(user: UserModel): Promise<IAuthResponse> {
+  async login(user: UserModel, res: Response): Promise<IAuthResponse> {
     const { access_token, refresh_token } = await this.generateAndUpdateTokens(
       user._id,
     )
 
+    // Устанавливаем refresh_token в куки
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    })
+
     return {
       message: 'Login successful',
       access_token,
-      refresh_token,
+      // refresh_token,
       user: {
         id: user._id,
         email: user.email,
@@ -97,18 +116,38 @@ export class AuthService {
     }
   }
 
-  async logout(id: Pick<UserModel, 'id'>): Promise<{ message: string }> {
+  async logout(
+    id: Pick<UserModel, 'id'>,
+    res: Response,
+  ): Promise<{ message: string }> {
     console.log('id :>> ', id)
     await this.userModel.findByIdAndUpdate(id, {
       access_token: null,
       refresh_token: null,
     })
 
+    // Удаляем refresh_token из куков
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires: new Date(0), // Устанавливаем истекший срок действия
+    })
+
     return { message: 'Logout successful' }
   }
 
-  async refreshToken(user: UserModel): Promise<IAuthResponse> {
-    const { access_token } = await this.generateAndUpdateTokens(user._id)
+  async refreshToken(user: UserModel, res: Response): Promise<IAuthResponse> {
+    const { access_token, refresh_token } = await this.generateAndUpdateTokens(
+      user._id,
+    )
+
+    // Устанавливаем новый refresh_token в куки
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    })
 
     return {
       message: 'Refresh successful',
