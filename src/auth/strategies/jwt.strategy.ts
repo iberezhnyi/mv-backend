@@ -19,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),
-      passReqToCallback: true,
+      // passReqToCallback: true,
     })
   }
 
@@ -33,11 +33,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found')
     }
 
-    const tokenFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken()(req)
+    // const tokenFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken()(req)
 
-    if (user.access_token !== tokenFromRequest) {
-      throw new UnauthorizedException('Invalid token')
-    }
+    // if (user.access_token !== tokenFromRequest) {
+    //   throw new UnauthorizedException('Invalid token')
+    // }
 
     return user
   }

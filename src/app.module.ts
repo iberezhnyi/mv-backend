@@ -9,10 +9,12 @@ import { MonthsModule } from './months/months.module'
 import { WeeksModule } from './weeks/weeks.module'
 import { TasksModule } from './tasks/tasks.module'
 import { NotesModule } from './notes/notes.module'
+import { CustomConfigModule } from './common/configs/custom.config.module'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // ConfigModule.forRoot({ isGlobal: true }),
+    CustomConfigModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

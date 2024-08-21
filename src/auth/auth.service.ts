@@ -26,15 +26,26 @@ export class AuthService {
     const refresh_token = this.jwtService.sign(
       { id },
       {
-        expiresIn: '7d',
+        expiresIn: '3m',
         secret: this.configService.get<string>('REFRESH_JWT_SECRET'),
       },
     )
 
-    // Обновляем только refresh_token в базе данных
-    await this.userModel.findByIdAndUpdate(id, { refresh_token, access_token })
+    if (!access_token || !refresh_token) {
+      throw new Error('Error generating tokens')
+    }
+
+    await this.userModel.findByIdAndUpdate(id, { refresh_token })
 
     return { access_token, refresh_token }
+  }
+
+  private setRefreshTokenCookie(refresh_token: string, res: Response): void {
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+    })
   }
 
   async normalizedEmailAndFindUser(email: RegisterUserDto['email']) {
@@ -71,17 +82,11 @@ export class AuthService {
       user._id,
     )
 
-    // Устанавливаем refresh_token в куки
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    })
+    this.setRefreshTokenCookie(refresh_token as string, res)
 
     return {
       message: 'Registration successful',
       access_token,
-      // refresh_token,
       user: {
         id: user._id,
         email: user.email,
@@ -96,17 +101,25 @@ export class AuthService {
       user._id,
     )
 
-    // Устанавливаем refresh_token в куки
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    })
+    console.log('this.configService :>> ', this.configService)
+
+    this.setRefreshTokenCookie(refresh_token as string, res)
 
     return {
       message: 'Login successful',
       access_token,
-      // refresh_token,
+      user: {
+        id: user._id,
+        email: user.email,
+        subscription: user.subscription,
+        role: user.roles[0],
+      },
+    }
+  }
+
+  async getProfile(user: UserModel): Promise<any> {
+    return {
+      message: 'Profile fetched successfully',
       user: {
         id: user._id,
         email: user.email,
@@ -122,32 +135,25 @@ export class AuthService {
   ): Promise<{ message: string }> {
     console.log('id :>> ', id)
     await this.userModel.findByIdAndUpdate(id, {
-      access_token: null,
       refresh_token: null,
     })
 
-    // Удаляем refresh_token из куков
     res.cookie('refresh_token', '', {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
-      expires: new Date(0), // Устанавливаем истекший срок действия
+      expires: new Date(0),
     })
 
     return { message: 'Logout successful' }
   }
 
-  async refreshToken(user: UserModel, res: Response): Promise<IAuthResponse> {
+  async refreshTokens(user: UserModel, res: Response): Promise<IAuthResponse> {
     const { access_token, refresh_token } = await this.generateAndUpdateTokens(
       user._id,
     )
 
-    // Устанавливаем новый refresh_token в куки
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    })
+    this.setRefreshTokenCookie(refresh_token as string, res)
 
     return {
       message: 'Refresh successful',

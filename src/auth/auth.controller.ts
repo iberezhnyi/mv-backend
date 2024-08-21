@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Req,
   Res,
+  Get,
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
@@ -47,6 +48,13 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @Get('profile')
+  async getProfile(@Req() req: Request): Promise<IAuthResponse> {
+    return await this.authService.getProfile(req.user as UserModel)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('logout')
   async logout(
     @Req() req: Request,
@@ -59,9 +67,9 @@ export class AuthController {
   }
 
   @UseGuards(RefreshJwtGuard)
-  @Post('refresh')
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
-    const response = await this.authService.refreshToken(
+  @Get('refresh')
+  async refreshTokens(@Req() req: Request, @Res() res: Response) {
+    const response = await this.authService.refreshTokens(
       req.user as UserModel,
       res,
     )
