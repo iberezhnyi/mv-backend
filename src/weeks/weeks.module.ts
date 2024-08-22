@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { WeeksService } from './weeks.service'
-import { WeeksController } from './weeks.controller'
 import { MongooseModule } from '@nestjs/mongoose'
-import { NoteModel, NoteModelSchema } from '../notes/schemas/note.schema'
 import { TaskModel, TaskModelSchema } from 'src/tasks/schemas'
+import { NoteModel, NoteModelSchema } from 'src/notes/schemas'
+import { WeeksController } from './weeks.controller'
+import { WeeksService } from './weeks.service'
 
 @Module({
   imports: [

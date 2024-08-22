@@ -3,17 +3,17 @@ import {
   Post,
   Body,
   UseGuards,
-  Request,
+  Req,
   Patch,
   Param,
   Delete,
 } from '@nestjs/common'
-import { NotesService } from './notes.service'
-
+import { Request } from 'express'
 import { JwtAuthGuard } from 'src/common/guards'
-import { Request as IRequest } from 'express'
+import { UserModel } from 'src/users/schemas'
+import { NotesService } from './notes.service'
 import { CreateNoteDto, UpdateNoteDto } from './dto'
-import { INoteResponse, INoteUpdate } from './interfaces'
+import { INoteResponse } from './interfaces'
 
 @Controller('notes')
 export class NotesController {
@@ -22,38 +22,38 @@ export class NotesController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createNote(
-    @Body() noteData: CreateNoteDto,
-    @Request() req: IRequest,
+    @Body() createData: CreateNoteDto,
+    @Req() req: Request,
   ): Promise<INoteResponse> {
-    return await this.notesService.createNote({
-      noteData,
-      user: req.user,
-    } as INoteUpdate)
+    const user = req.user as UserModel
+
+    return await this.notesService.createNote({ user, createData })
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async updateNote(
     @Param('id') id: string,
-    @Body() updateNoteData: UpdateNoteDto,
-    @Request() req: IRequest,
+    @Body() updateData: UpdateNoteDto,
+    @Req() req: Request,
   ): Promise<INoteResponse> {
+    const user = req.user as UserModel
+
     return await this.notesService.updateNote({
+      user,
       noteId: id,
-      noteData: updateNoteData,
-      user: req.user,
-    } as INoteUpdate)
+      updateData,
+    })
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteNote(
     @Param('id') id: string,
-    @Request() req: IRequest,
+    @Req() req: Request,
   ): Promise<INoteResponse> {
-    return await this.notesService.deleteNote({
-      noteId: id,
-      user: req.user,
-    } as INoteUpdate)
+    const user = req.user as UserModel
+
+    return await this.notesService.deleteNote({ noteId: id, user })
   }
 }

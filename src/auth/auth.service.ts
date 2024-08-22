@@ -1,13 +1,24 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
+import { ConfigService } from 'src/common/configs'
+import { Response } from 'express'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { RegisterUserDto } from './dto'
-import { IAuthResponse } from './interfaces'
 import { UserModel } from 'src/users/schemas'
-import { ConfigService } from '@nestjs/config'
-import { Response } from 'express'
+import {
+  IAuthParams,
+  IAuthRegister,
+  IAuthResponse,
+  IAuthTokens,
+  ILogoutResponse,
+  IProfileResponse,
+  IRefreshResponse,
+} from './interfaces'
 
 @Injectable()
 export class AuthService {
@@ -19,20 +30,18 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  private async generateAndUpdateTokens(
-    id: UserModel['id'],
-  ): Promise<Pick<IAuthResponse, 'access_token' | 'refresh_token'>> {
+  private async generateAndUpdateTokens(id: string): Promise<IAuthTokens> {
     const access_token = this.jwtService.sign({ id })
     const refresh_token = this.jwtService.sign(
       { id },
       {
-        expiresIn: '3m',
-        secret: this.configService.get<string>('REFRESH_JWT_SECRET'),
+        expiresIn: '7d',
+        secret: this.configService.refreshJwtSecret,
       },
     )
 
     if (!access_token || !refresh_token) {
-      throw new Error('Error generating tokens')
+      throw new InternalServerErrorException()
     }
 
     await this.userModel.findByIdAndUpdate(id, { refresh_token })
@@ -43,12 +52,12 @@ export class AuthService {
   private setRefreshTokenCookie(refresh_token: string, res: Response): void {
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this.configService.isProduction,
       sameSite: 'lax',
     })
   }
 
-  async normalizedEmailAndFindUser(email: RegisterUserDto['email']) {
+  async normalizedEmailAndFindUser(email: string) {
     const normalizedEmail = email.toLowerCase()
     const user = await this.userModel.findOne({
       email: normalizedEmail,
@@ -57,10 +66,7 @@ export class AuthService {
     return { user, normalizedEmail }
   }
 
-  async register(
-    userData: RegisterUserDto,
-    res: Response,
-  ): Promise<IAuthResponse> {
+  async register({ userData, res }: IAuthRegister): Promise<IAuthResponse> {
     const { email, password, subscription } = userData
 
     const { user: emailExist, normalizedEmail } =
@@ -79,7 +85,7 @@ export class AuthService {
     })
 
     const { access_token, refresh_token } = await this.generateAndUpdateTokens(
-      user._id,
+      user._id as string,
     )
 
     this.setRefreshTokenCookie(refresh_token as string, res)
@@ -96,12 +102,10 @@ export class AuthService {
     }
   }
 
-  async login(user: UserModel, res: Response): Promise<IAuthResponse> {
+  async login({ user, res }: IAuthParams): Promise<IAuthResponse> {
     const { access_token, refresh_token } = await this.generateAndUpdateTokens(
-      user._id,
+      user._id as string,
     )
-
-    console.log('this.configService :>> ', this.configService)
 
     this.setRefreshTokenCookie(refresh_token as string, res)
 
@@ -117,7 +121,7 @@ export class AuthService {
     }
   }
 
-  async getProfile(user: UserModel): Promise<any> {
+  async getProfile(user: UserModel): Promise<IProfileResponse> {
     return {
       message: 'Profile fetched successfully',
       user: {
@@ -129,18 +133,14 @@ export class AuthService {
     }
   }
 
-  async logout(
-    id: Pick<UserModel, 'id'>,
-    res: Response,
-  ): Promise<{ message: string }> {
-    console.log('id :>> ', id)
-    await this.userModel.findByIdAndUpdate(id, {
+  async logout({ user, res }: IAuthParams): Promise<ILogoutResponse> {
+    await this.userModel.findByIdAndUpdate(user.id, {
       refresh_token: null,
     })
 
     res.cookie('refresh_token', '', {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this.configService.isProduction,
       sameSite: 'lax',
       expires: new Date(0),
     })
@@ -148,9 +148,9 @@ export class AuthService {
     return { message: 'Logout successful' }
   }
 
-  async refreshTokens(user: UserModel, res: Response): Promise<IAuthResponse> {
+  async refreshTokens({ user, res }: IAuthParams): Promise<IRefreshResponse> {
     const { access_token, refresh_token } = await this.generateAndUpdateTokens(
-      user._id,
+      user._id as string,
     )
 
     this.setRefreshTokenCookie(refresh_token as string, res)
@@ -158,12 +158,6 @@ export class AuthService {
     return {
       message: 'Refresh successful',
       access_token,
-      user: {
-        id: user._id,
-        email: user.email,
-        subscription: user.subscription,
-        role: user.roles[0],
-      },
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { ConfigService } from '@nestjs/config'
+import { ConfigService } from 'src/common/configs'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Request } from 'express'
@@ -25,7 +25,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('REFRESH_JWT_SECRET'),
+      secretOrKey: configService.refreshJwtSecret,
       passReqToCallback: true,
     })
   }

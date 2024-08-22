@@ -7,14 +7,19 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Req,
 } from '@nestjs/common'
-import { TasksService } from './tasks.service'
+import { Request } from 'express'
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards'
-import { Request as IRequest } from 'express'
 import { Roles } from 'src/common/decorators'
+import { TasksService } from './tasks.service'
+import { UserModel } from 'src/users/schemas'
 import { CreateTaskDto, UpdateTaskDto } from './dto'
-import { ITaskResponse, IUpdateTask } from './interfaces'
+import {
+  IAllTaskResponse,
+  ITaskCompleteResponse,
+  ITaskResponse,
+} from './interfaces'
 
 @Controller('tasks')
 export class TasksController {
@@ -23,15 +28,15 @@ export class TasksController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  async findAll(): Promise<ITaskResponse> {
-    return this.tasksService.findAll()
+  async findAll(): Promise<IAllTaskResponse> {
+    return await this.tasksService.findAll()
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get(':id')
   async findOne(@Param('id') taskId: string): Promise<ITaskResponse> {
-    return this.tasksService.findOne(taskId)
+    return await this.tasksService.findOne(taskId)
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -40,19 +45,18 @@ export class TasksController {
   async createTask(
     @Body() createTaskData: CreateTaskDto,
   ): Promise<ITaskResponse> {
-    return this.tasksService.createTask(createTaskData)
+    return await this.tasksService.createTask(createTaskData)
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch()
   async completeTask(
-    @Request() req: IRequest,
+    @Req() req: Request,
     @Body() updateTaskData: UpdateTaskDto,
-  ): Promise<ITaskResponse> {
-    return this.tasksService.completeTask({
-      updateTaskData,
-      user: req.user,
-    } as IUpdateTask)
+  ): Promise<ITaskCompleteResponse> {
+    const user = req.user as UserModel
+
+    return await this.tasksService.completeTask({ user, updateTaskData })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -62,16 +66,13 @@ export class TasksController {
     @Param('id') taskId: string,
     @Body() updateTaskData: UpdateTaskDto,
   ): Promise<ITaskResponse> {
-    return this.tasksService.updateTask({
-      taskId,
-      updateTaskData,
-    } as IUpdateTask)
+    return await this.tasksService.updateTask({ taskId, updateTaskData })
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Delete(':id')
   async removeTask(@Param('id') taskId: string): Promise<ITaskResponse> {
-    return this.tasksService.removeTask(taskId)
+    return await this.tasksService.removeTask(taskId)
   }
 }

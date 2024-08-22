@@ -1,8 +1,8 @@
-import { Controller, Get, UseGuards, Request, Query } from '@nestjs/common'
-import { WeeksService } from './weeks.service'
+import { Controller, Get, UseGuards, Query, Req } from '@nestjs/common'
+import { Request } from 'express'
 import { JwtAuthGuard } from 'src/common/guards'
-import { Request as IRequest } from 'express'
 import { UserModel } from 'src/users/schemas'
+import { WeeksService } from './weeks.service'
 
 @Controller('weeks')
 export class WeeksController {
@@ -10,7 +10,9 @@ export class WeeksController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  getWeekInfo(@Request() req: IRequest, @Query('date') date: string) {
-    return this.weeksService.getWeekInfo(req.user as UserModel, new Date(date))
+  async getWeekInfo(@Req() req: Request, @Query('date') date: string) {
+    const user = req.user as UserModel
+
+    return await this.weeksService.getWeekInfo({ user, date: new Date(date) })
   }
 }

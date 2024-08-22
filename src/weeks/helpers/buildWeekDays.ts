@@ -1,12 +1,20 @@
 import { NoteModel } from 'src/notes/schemas'
 import { TaskModel } from 'src/tasks/schemas'
+import { IWeekDay } from '../interfaces'
 
-export function buildWeekDays(
-  startOfWeek: Date,
-  endOfWeek: Date,
-  notes: NoteModel[],
-  tasks: TaskModel[],
-) {
+interface IBuildWeekParams {
+  startOfWeek: Date
+  endOfWeek: Date
+  notes: NoteModel[]
+  tasks: TaskModel[]
+}
+
+export const buildWeekDays = ({
+  startOfWeek,
+  endOfWeek,
+  notes,
+  tasks,
+}: IBuildWeekParams): IWeekDay[] => {
   const weekDays = []
 
   for (let i = startOfWeek; i <= endOfWeek; i.setDate(i.getDate() + 1)) {

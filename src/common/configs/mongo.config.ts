@@ -1,4 +1,4 @@
-import { ConfigService } from '@nestjs/config'
+import { ConfigService } from './config.service'
 import { MongooseModuleOptions } from '@nestjs/mongoose'
 
 export const getMongoConfig = async (
@@ -12,13 +12,13 @@ export const getMongoConfig = async (
 const getMongoString = (configService: ConfigService): string => {
   const uri =
     'mongodb+srv://' +
-    configService.get<string>('MONGO_USER') +
+    configService.mongoUser +
     ':' +
-    configService.get<string>('MONGO_PASSWORD') +
+    configService.mongoPassword +
     '@' +
-    configService.get<string>('MONGO_HOST') +
+    configService.mongoHost +
     '/' +
-    configService.get<string>('MONGO_DB_NAME') +
+    configService.mongoDbName +
     '?' +
     'retryWrites=true&w=majority&appName=Cluster0'
 

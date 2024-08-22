@@ -1,3 +1,5 @@
-export { ITaskResponse } from './task-response.interface'
-export { IUpdateTask } from './task-update.interface'
-// export { ITaskAdminResponse } from './task-response.interface'
+export { ITaskResponse } from './tasks.interfaces'
+export { IAllTaskResponse } from './tasks.interfaces'
+export { ITaskCompleteParams } from './tasks.interfaces'
+export { ITaskCompleteResponse } from './tasks.interfaces'
+export { IUpdateTaskParams } from './tasks.interfaces'

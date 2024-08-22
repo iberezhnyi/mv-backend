@@ -4,11 +4,17 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
+import { isValidObjectId, Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { TaskModel } from './schemas'
-import { isValidObjectId, Model } from 'mongoose'
-import { ITaskResponse, IUpdateTask } from './interfaces'
 import { CreateTaskDto } from './dto'
+import {
+  IAllTaskResponse,
+  ITaskCompleteParams,
+  ITaskCompleteResponse,
+  ITaskResponse,
+  IUpdateTaskParams,
+} from './interfaces'
 
 @Injectable()
 export class TasksService {
@@ -16,7 +22,7 @@ export class TasksService {
     @InjectModel(TaskModel.name) private readonly taskModel: Model<TaskModel>,
   ) {}
 
-  async findAll(): Promise<ITaskResponse> {
+  async findAll(): Promise<IAllTaskResponse> {
     const tasks = await this.taskModel
       .find()
       .select('-createdAt -updatedAt -__v')
@@ -70,9 +76,9 @@ export class TasksService {
   }
 
   async completeTask({
-    updateTaskData,
     user,
-  }: IUpdateTask): Promise<ITaskResponse> {
+    updateTaskData,
+  }: ITaskCompleteParams): Promise<ITaskCompleteResponse> {
     const { taskId } = updateTaskData
 
     if (user === undefined) {
@@ -117,7 +123,7 @@ export class TasksService {
   async updateTask({
     taskId,
     updateTaskData,
-  }: IUpdateTask): Promise<ITaskResponse> {
+  }: IUpdateTaskParams): Promise<ITaskResponse> {
     if (!isValidObjectId(taskId)) {
       throw new BadRequestException('Invalid Task ID')
     }

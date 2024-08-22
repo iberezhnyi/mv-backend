@@ -3,10 +3,15 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
+import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { NoteModel } from './schemas'
-import { Model } from 'mongoose'
-import { INoteResponse, INoteUpdate } from './interfaces'
+import {
+  INoteCreate,
+  INoteDelete,
+  INoteResponse,
+  INoteUpdate,
+} from './interfaces'
 
 @Injectable()
 export class NotesService {
@@ -15,8 +20,8 @@ export class NotesService {
     private readonly noteModel: Model<NoteModel>,
   ) {}
 
-  async createNote({ noteData, user }: INoteUpdate): Promise<INoteResponse> {
-    const { note: noteFromData, date } = noteData
+  async createNote({ user, createData }: INoteCreate): Promise<INoteResponse> {
+    const { note: noteFromData, date } = createData
 
     if (user === undefined) {
       throw new UnauthorizedException('User not found')
@@ -43,13 +48,13 @@ export class NotesService {
   }
 
   async updateNote({
-    noteId,
-    noteData,
     user,
+    noteId,
+    updateData,
   }: INoteUpdate): Promise<INoteResponse> {
     const note = await this.noteModel.findOneAndUpdate(
       { _id: noteId, owner: user.id },
-      { $set: noteData },
+      { $set: updateData },
       { new: true },
     )
 
@@ -71,7 +76,7 @@ export class NotesService {
     }
   }
 
-  async deleteNote({ noteId, user }: INoteUpdate): Promise<INoteResponse> {
+  async deleteNote({ noteId, user }: INoteDelete): Promise<INoteResponse> {
     const note = await this.noteModel.findOneAndDelete({
       _id: noteId,
       owner: user.id,

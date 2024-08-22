@@ -1,14 +1,12 @@
 import { NestFactory } from '@nestjs/core'
-import { ConfigService } from '@nestjs/config'
-import { AppModule } from './app.module'
 import { ValidationPipe } from '@nestjs/common'
-import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
 import * as cookieParser from 'cookie-parser'
-// import { HttpExceptionFilter } from './filters'
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
+import { ConfigService } from './common/configs'
+import { AppModule } from './app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  // app.useGlobalFilters(new HttpExceptionFilter())
 
   app.use(cookieParser())
 
@@ -23,7 +21,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe())
 
   const configService = app.get(ConfigService)
-  const port = configService.get('port')
+  const port = configService.port
 
   app.setGlobalPrefix('api')
   await app.listen(port, () => console.log(`Listen on port ${port}`))

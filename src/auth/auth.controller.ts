@@ -10,15 +10,15 @@ import {
   Get,
 } from '@nestjs/common'
 import { Request, Response } from 'express'
-import { AuthService } from './auth.service'
 import {
   JwtAuthGuard,
   LocalAuthGuard,
   RefreshJwtGuard,
 } from 'src/common/guards'
-import { RegisterUserDto } from './dto'
-import { IAuthResponse } from './interfaces'
 import { UserModel } from 'src/users/schemas'
+import { AuthService } from './auth.service'
+import { RegisterUserDto } from './dto'
+import { IAuthResponse, IProfileResponse } from './interfaces'
 
 @Controller('auth')
 export class AuthController {
@@ -27,11 +27,9 @@ export class AuthController {
   @Post('register')
   async register(
     @Body() userData: RegisterUserDto,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<IAuthResponse> {
-    const response = await this.authService.register(userData, res)
-    res.json(response)
-    return response
+    return await this.authService.register({ userData, res })
   }
 
   @UseGuards(LocalAuthGuard)
@@ -39,17 +37,16 @@ export class AuthController {
   @Post('login')
   async login(
     @Req() req: Request,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<IAuthResponse> {
-    const response = await this.authService.login(req.user as UserModel, res)
-    res.json(response)
-    return response
+    const user = req.user as UserModel
+
+    return await this.authService.login({ user, res })
   }
 
   @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
   @Get('profile')
-  async getProfile(@Req() req: Request): Promise<IAuthResponse> {
+  async getProfile(@Req() req: Request): Promise<IProfileResponse> {
     return await this.authService.getProfile(req.user as UserModel)
   }
 
@@ -58,22 +55,21 @@ export class AuthController {
   @Post('logout')
   async logout(
     @Req() req: Request,
-    @Res() res: Response,
+    @Res({ passthrough: true }) res: Response,
   ): Promise<{ message: string }> {
     const user = req.user as UserModel
-    const response = await this.authService.logout(user.id, res)
-    res.json(response)
-    return response
+
+    return await this.authService.logout({ user, res })
   }
 
   @UseGuards(RefreshJwtGuard)
   @Get('refresh')
-  async refreshTokens(@Req() req: Request, @Res() res: Response) {
-    const response = await this.authService.refreshTokens(
-      req.user as UserModel,
-      res,
-    )
-    res.json(response)
-    return response
+  async refreshTokens(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = req.user as UserModel
+
+    return await this.authService.refreshTokens({ user, res })
   }
 }

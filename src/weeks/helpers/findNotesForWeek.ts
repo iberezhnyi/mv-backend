@@ -1,12 +1,19 @@
 import { Model } from 'mongoose'
 import { NoteModel } from 'src/notes/schemas'
 
-export async function findNotesForWeek(
-  noteModel: Model<NoteModel>,
-  owner: string,
-  startOfWeek: Date,
-  endOfWeek: Date,
-) {
+interface IFindNotesForWeekParams {
+  noteModel: Model<NoteModel>
+  owner: string
+  startOfWeek: Date
+  endOfWeek: Date
+}
+
+export async function findNotesForWeek({
+  noteModel,
+  owner,
+  startOfWeek,
+  endOfWeek,
+}: IFindNotesForWeekParams) {
   return noteModel
     .find({
       owner,
