@@ -6,7 +6,6 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 // import { Request } from 'express'
 import { UserModel } from 'src/users/schemas'
-// import { User, UserDocument } from 'src/users/schemas'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -26,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(
     // req: Request,
-    payload: Pick<UserModel, 'id'>,
+    payload: { id: string },
   ): Promise<UserModel> {
     const user = await this.userModel.findById(payload.id)
 

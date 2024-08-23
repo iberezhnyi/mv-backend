@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { ConfigService } from 'src/common/configs'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
-import { ConfigService } from 'src/common/configs'
-import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 import { Request } from 'express'
 import { UserModel } from 'src/users/schemas'
 
@@ -21,7 +21,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
-          return req.cookies['refresh_token'] // Извлечение рефреш токена из куков
+          return req.cookies['refresh_token']
         },
       ]),
       ignoreExpiration: false,
@@ -30,14 +30,11 @@ export class RefreshJwtStrategy extends PassportStrategy(
     })
   }
 
-  async validate(
-    req: Request,
-    payload: Pick<UserModel, 'id'>,
-  ): Promise<UserModel> {
+  async validate(req: Request, payload: { id: string }): Promise<UserModel> {
     const user = await this.userModel.findById(payload.id)
 
     if (user === null) {
-      throw new UnauthorizedException('User not found!!!!')
+      throw new UnauthorizedException('User not found!')
     }
 
     const refreshToken = req.cookies['refresh_token']

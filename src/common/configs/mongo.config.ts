@@ -24,9 +24,7 @@ const getMongoString = (configService: ConfigService): string => {
 
   // const uri = `configService.get<string>('DB_HOST')`
 
-  if (!uri) {
-    throw new Error('URI is not defined')
-  }
+  if (!uri) throw new Error('URI is not defined')
 
   return uri
 }

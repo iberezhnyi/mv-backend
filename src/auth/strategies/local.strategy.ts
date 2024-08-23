@@ -1,23 +1,26 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { Strategy } from 'passport-local'
 import { PassportStrategy } from '@nestjs/passport'
+import { Strategy } from 'passport-local'
 import * as bcrypt from 'bcrypt'
-import { AuthService } from '../auth.service'
-// import { UserDocument } from 'src/users/schemas'
-import { LoginDto } from '../dto'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 import { UserModel } from 'src/users/schemas'
+import { normalizedEmailAndFindUser } from 'src/common/helpers'
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    @InjectModel(UserModel.name)
+    private readonly userModel: Model<UserModel>,
+  ) {
     super({ usernameField: 'email' })
   }
 
-  async validate(
-    email: LoginDto['email'],
-    password: LoginDto['password'],
-  ): Promise<UserModel> {
-    const { user } = await this.authService.normalizedEmailAndFindUser(email)
+  async validate(email: string, password: string): Promise<UserModel> {
+    const { user } = await normalizedEmailAndFindUser({
+      email,
+      userModel: this.userModel,
+    })
 
     if (user === null) {
       throw new UnauthorizedException('Invalid email or password!')

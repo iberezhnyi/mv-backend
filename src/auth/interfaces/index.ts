@@ -1,7 +1,2 @@
-export { IAuthResponse } from './auth.interfaces'
-export { IProfileResponse } from './auth.interfaces'
-export { IRefreshResponse } from './auth.interfaces'
-export { ILogoutResponse } from './auth.interfaces'
-export { IAuthTokens } from './auth.interfaces'
-export { IAuthRegister } from './auth.interfaces'
 export { IAuthParams } from './auth.interfaces'
+export { IAuthResponse } from './auth.interfaces'

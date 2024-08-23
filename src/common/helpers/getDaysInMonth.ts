@@ -7,10 +7,18 @@ interface IGetDaysInMonth {
   year: number
 }
 
-export const getDaysInMonth = (
-  year: number = getCurrentYear(),
-  month: number = getCurrentMonth(),
-): IGetDaysInMonth => {
+interface IGetDaysInMonthParams {
+  monthData?: number
+  yearData?: number
+}
+
+export const getDaysInMonth = ({
+  monthData,
+  yearData,
+}: IGetDaysInMonthParams): IGetDaysInMonth => {
+  const year = yearData || getCurrentYear()
+  const month = monthData || getCurrentMonth()
+
   return {
     daysInMonth: new Date(year, month, 0).getDate(),
     month: month,

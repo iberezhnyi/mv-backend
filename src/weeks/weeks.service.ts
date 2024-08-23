@@ -25,6 +25,9 @@ export class WeeksService {
     const { id: owner } = user
     const { startOfWeek, endOfWeek } = getWeekStartAndEnd(date)
 
+    console.log('startOfWeek1 :>> ', startOfWeek)
+    console.log('endOfWeek1 :>> ', endOfWeek)
+
     const notes = await findNotesForWeek({
       noteModel: this.noteModel,
       owner,
@@ -39,7 +42,13 @@ export class WeeksService {
       endOfWeek,
     })
 
+    console.log('startOfWeek2 :>> ', startOfWeek)
+    console.log('endOfWeek2 :>> ', endOfWeek)
+
     const weekDays = buildWeekDays({ startOfWeek, endOfWeek, notes, tasks })
+
+    console.log('startOfWeek :>> ', startOfWeek)
+    console.log('endOfWeek :>> ', endOfWeek)
 
     return {
       message: `Week from ${startOfWeek} till ${endOfWeek}`,

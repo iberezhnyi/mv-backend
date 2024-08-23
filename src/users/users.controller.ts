@@ -6,39 +6,53 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common'
-import { UsersService } from './users.service'
-import { UpdateUserDto } from './dto'
-import { UserModel } from './schemas'
+import { Request } from 'express'
 import { JwtAuthGuard, RolesGuard } from 'src/common/guards'
 import { Roles } from 'src/common/decorators'
+import { UserModel } from './schemas'
+import { UsersService } from './users.service'
+import { UpdateUserDto } from './dto'
+import { IUserResponse } from './interfaces'
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Patch()
+  async updateUser(
+    @Req() req: Request,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<IUserResponse> {
+    const user = req.user as UserModel
+
+    return await this.usersService.updateUser({
+      userId: user.id,
+      updateUserDto,
+    })
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete()
+  async deleteUser(@Req() req: Request): Promise<IUserResponse> {
+    const user = req.user as UserModel
+
+    return await this.usersService.deleteUser(user)
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get()
-  findAll(): Promise<UserModel[]> {
-    return this.usersService.findAll()
+  async findAll(): Promise<UserModel[]> {
+    return await this.usersService.findAll()
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<UserModel> {
-    return this.usersService.findOne(id)
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UserModel> {
-    return this.usersService.update(id, updateUserDto)
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.remove(id)
+  async findOne(@Param('id') id: string): Promise<UserModel> {
+    return await this.usersService.findOne(id)
   }
 }

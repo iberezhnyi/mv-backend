@@ -11,18 +11,18 @@ export class ConfigService {
 
   get port(): number {
     const port = this.nestConfigService.get<number>('PORT')
-    if (port === undefined) {
+
+    if (!port)
       throw new Error('PORT is not defined in the environment variables')
-    }
+
     return port
   }
 
   get jwtSecret(): string {
     const secret = this.nestConfigService.get<string>('JWT_SECRET')
 
-    if (!secret) {
+    if (!secret)
       throw new Error('JWT_SECRET is not defined in the environment variables')
-    }
 
     return secret
   }
@@ -30,49 +30,52 @@ export class ConfigService {
   get refreshJwtSecret(): string {
     const secret = this.nestConfigService.get<string>('REFRESH_JWT_SECRET')
 
-    if (!secret) {
+    if (!secret)
       throw new Error(
         'REFRESH_JWT_SECRET is not defined in the environment variables',
       )
-    }
 
     return secret
   }
 
-  // Методы для доступа к параметрам MongoDB
+  // MongoDB
   get mongoUser(): string {
     const user = this.nestConfigService.get<string>('MONGO_USER')
-    if (!user) {
+
+    if (!user)
       throw new Error('MONGO_USER is not defined in the environment variables')
-    }
+
     return user
   }
 
   get mongoPassword(): string {
     const password = this.nestConfigService.get<string>('MONGO_PASSWORD')
-    if (!password) {
+
+    if (!password)
       throw new Error(
         'MONGO_PASSWORD is not defined in the environment variables',
       )
-    }
+
     return password
   }
 
   get mongoHost(): string {
     const host = this.nestConfigService.get<string>('MONGO_HOST')
-    if (!host) {
+
+    if (!host)
       throw new Error('MONGO_HOST is not defined in the environment variables')
-    }
+
     return host
   }
 
   get mongoDbName(): string {
     const dbName = this.nestConfigService.get<string>('MONGO_DB_NAME')
-    if (!dbName) {
+
+    if (!dbName)
       throw new Error(
         'MONGO_DB_NAME is not defined in the environment variables',
       )
-    }
+
     return dbName
   }
 }

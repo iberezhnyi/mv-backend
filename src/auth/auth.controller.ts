@@ -17,19 +17,25 @@ import {
 } from 'src/common/guards'
 import { UserModel } from 'src/users/schemas'
 import { AuthService } from './auth.service'
-import { RegisterUserDto } from './dto'
-import { IAuthResponse, IProfileResponse } from './interfaces'
+import { UsersService } from 'src/users/users.service'
+import { CreateUserDto } from 'src/users/dto'
+import { IAuthResponse } from './interfaces'
+import { IUserResponse } from 'src/users/interfaces'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('register')
   async register(
-    @Body() userData: RegisterUserDto,
+    @Body() createUserData: CreateUserDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<IAuthResponse> {
-    return await this.authService.register({ userData, res })
+    return await this.usersService.createUser({ createUserData, res })
   }
 
   @UseGuards(LocalAuthGuard)
@@ -46,8 +52,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Req() req: Request): Promise<IProfileResponse> {
-    return await this.authService.getProfile(req.user as UserModel)
+  async getProfile(@Req() req: Request): Promise<IUserResponse> {
+    return await this.usersService.getProfile(req.user as UserModel)
   }
 
   @UseGuards(JwtAuthGuard)
@@ -56,7 +62,7 @@ export class AuthController {
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ message: string }> {
+  ): Promise<IAuthResponse> {
     const user = req.user as UserModel
 
     return await this.authService.logout({ user, res })
@@ -67,7 +73,7 @@ export class AuthController {
   async refreshTokens(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<IAuthResponse> {
     const user = req.user as UserModel
 
     return await this.authService.refreshTokens({ user, res })

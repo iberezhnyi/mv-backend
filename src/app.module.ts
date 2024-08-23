@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
-import { MongooseModule } from '@nestjs/mongoose'
 import { ConfigModule, ConfigService, getMongoConfig } from './common/configs'
+import { MongooseModule } from '@nestjs/mongoose'
 import { LoggerMiddleware } from './common/middlewares'
 import { AuthModule } from './auth/auth.module'
 import { UsersModule } from './users/users.module'
