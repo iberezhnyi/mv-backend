@@ -10,8 +10,9 @@ export class WeeksController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getWeekInfo(@Req() req: Request, @Query('date') date: string) {
+  async getWeekInfo(@Req() req: Request, @Query('date') dateData: string) {
     const user = req.user as UserModel
+    const date = dateData || Date.now()
 
     return await this.weeksService.getWeekInfo({ user, date: new Date(date) })
   }

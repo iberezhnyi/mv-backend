@@ -17,7 +17,11 @@ export const buildWeekDays = ({
 }: IBuildWeekParams): IWeekDay[] => {
   const weekDays = []
 
-  for (let i = startOfWeek; i <= endOfWeek; i.setDate(i.getDate() + 1)) {
+  for (
+    let i = new Date(startOfWeek);
+    i <= endOfWeek;
+    i.setDate(i.getDate() + 1)
+  ) {
     const currentDate = new Date(i)
 
     const noteForDay = notes.find((note) => {
