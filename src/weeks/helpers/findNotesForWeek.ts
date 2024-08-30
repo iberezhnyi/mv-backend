@@ -3,20 +3,20 @@ import { NoteModel } from 'src/notes/schemas'
 
 interface IFindNotesForWeekParams {
   noteModel: Model<NoteModel>
-  owner: string
+  ownerId: string
   startOfWeek: Date
   endOfWeek: Date
 }
 
 export async function findNotesForWeek({
   noteModel,
-  owner,
+  ownerId,
   startOfWeek,
   endOfWeek,
 }: IFindNotesForWeekParams) {
-  return noteModel
+  return await noteModel
     .find({
-      owner,
+      owner: ownerId,
       date: { $gte: startOfWeek, $lte: endOfWeek },
     })
     .populate('owner', 'email')

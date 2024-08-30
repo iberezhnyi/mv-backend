@@ -1,10 +1,12 @@
 import { UserModel } from 'src/users/schemas'
-import { TaskModel } from 'src/tasks/schemas'
 import { NoteModel } from 'src/notes/schemas'
+import { ITask } from 'src/tasks/interfaces'
 
 export interface IWeekDay {
+  id: string
+  day: string
   notes: NoteModel | null
-  completedTasks: TaskModel[] | null
+  tasks: ITask[] | null
   date: Date
 }
 

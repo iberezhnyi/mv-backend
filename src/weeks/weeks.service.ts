@@ -22,24 +22,30 @@ export class WeeksService {
   ) {}
 
   async getWeekInfo({ user, date }: IGetWeekParams): Promise<IGetWeekResponse> {
-    const { id: owner } = user
+    const { id: ownerId } = user
     const { startOfWeek, endOfWeek } = getWeekStartAndEnd(date)
 
     const notes = await findNotesForWeek({
       noteModel: this.noteModel,
-      owner,
+      ownerId,
       startOfWeek,
       endOfWeek,
     })
 
     const tasks = await findTasksForWeek({
       taskModel: this.taskModel,
-      owner,
+      ownerId,
       startOfWeek,
       endOfWeek,
     })
 
-    const weekDays = buildWeekDays({ startOfWeek, endOfWeek, notes, tasks })
+    const weekDays = buildWeekDays({
+      startOfWeek,
+      endOfWeek,
+      notes,
+      tasks,
+      ownerId,
+    })
 
     return {
       message: `Week from ${startOfWeek} till ${endOfWeek}`,

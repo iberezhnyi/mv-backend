@@ -3,14 +3,14 @@ import { TaskModel } from 'src/tasks/schemas'
 
 interface IFindTasksForWeekParams {
   taskModel: Model<TaskModel>
-  owner: string
+  ownerId: string
   startOfWeek: Date
   endOfWeek: Date
 }
 
 export async function findTasksForWeek({
   taskModel,
-  owner,
+  // ownerId,
   startOfWeek,
   endOfWeek,
 }: IFindTasksForWeekParams) {
@@ -18,8 +18,8 @@ export async function findTasksForWeek({
 
     .find({
       date: { $gte: startOfWeek, $lte: endOfWeek },
-      [`completedBy.${owner}`]: true,
+      // [`completedBy.${ownerId}`]: true,
     })
-    .select('-completedBy -createdAt -updatedAt -__v')
+    .select('-createdAt -updatedAt -__v')
     .exec()
 }

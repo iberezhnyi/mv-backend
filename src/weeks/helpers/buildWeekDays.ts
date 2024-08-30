@@ -1,12 +1,14 @@
 import { NoteModel } from 'src/notes/schemas'
 import { TaskModel } from 'src/tasks/schemas'
 import { IWeekDay } from '../interfaces'
+import { v4 as uuidv4 } from 'uuid'
 
 interface IBuildWeekParams {
   startOfWeek: Date
   endOfWeek: Date
   notes: NoteModel[]
   tasks: TaskModel[]
+  ownerId: string
 }
 
 export const buildWeekDays = ({
@@ -14,6 +16,7 @@ export const buildWeekDays = ({
   endOfWeek,
   notes,
   tasks,
+  ownerId,
 }: IBuildWeekParams): IWeekDay[] => {
   const weekDays = []
 
@@ -32,19 +35,35 @@ export const buildWeekDays = ({
       )
     })
 
-    const tasksForDay = tasks.filter((task) => {
-      const taskDate = new Date(task.date)
-      return (
-        taskDate.toISOString().slice(0, 10) ===
-        currentDate.toISOString().slice(0, 10)
-      )
-    })
+    const tasksForDay = tasks
+      .filter((task) => {
+        const taskDate = new Date(task.date)
+        return (
+          taskDate.toISOString().slice(0, 10) ===
+          currentDate.toISOString().slice(0, 10)
+        )
+      })
+      .map((task) => {
+        const completed = task.completedBy?.get(ownerId) === true
+        return {
+          _id: task._id,
+          type: task.type,
+          title: task.title,
+          description: task.description,
+          date: task.date,
+          completed,
+        }
+      })
 
     const tasksResult = tasksForDay.length > 0 ? tasksForDay : null
 
+    const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' })
+
     weekDays.push({
+      id: uuidv4(),
+      day: dayName,
       notes: noteForDay || null,
-      completedTasks: tasksResult,
+      tasks: tasksResult,
       date: currentDate,
     })
   }

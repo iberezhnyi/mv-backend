@@ -2,7 +2,9 @@ import { UserModel } from 'src/users/schemas'
 import { UpdateTaskDto } from '../dto'
 import { TaskModel } from '../schemas'
 
-interface ITask extends Partial<TaskModel> {}
+export interface ITask extends Partial<TaskModel> {
+  completed?: boolean
+}
 
 export interface ITaskResponse {
   message: string

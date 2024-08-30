@@ -1,3 +1,4 @@
+export { ITask } from './tasks.interfaces'
 export { ITaskResponse } from './tasks.interfaces'
 export { IAllTaskResponse } from './tasks.interfaces'
 export { ITaskCompleteParams } from './tasks.interfaces'
