@@ -14,7 +14,7 @@ import { AuthService } from './auth.service'
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.jwtSecret,
-        signOptions: { expiresIn: '40s' },
+        signOptions: { expiresIn: '50s' },
       }),
       inject: [ConfigService],
     }),
