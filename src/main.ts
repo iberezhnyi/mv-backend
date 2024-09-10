@@ -11,7 +11,7 @@ async function bootstrap() {
   app.use(cookieParser())
 
   const corsOptions: CorsOptions = {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'https://iberezhnyi.github.io/planner'],
     // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   }
