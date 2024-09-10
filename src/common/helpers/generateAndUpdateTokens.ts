@@ -7,7 +7,14 @@ export const generateAndUpdateTokens = async ({
   userModel,
   userId,
 }: IGenerateAndUpdateTokensParams): Promise<IAuthTokens> => {
-  const access_token = jwtService.sign({ id: userId })
+  const access_token = jwtService.sign(
+    { id: userId },
+    {
+      expiresIn: '30s',
+      secret: configService.jwtSecret,
+    },
+  )
+
   const refresh_token = jwtService.sign(
     { id: userId },
     {
