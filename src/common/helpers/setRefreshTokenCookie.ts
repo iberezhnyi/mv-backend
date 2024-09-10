@@ -8,6 +8,6 @@ export const setRefreshTokenCookie = ({
   res.cookie('refresh_token', refresh_token, {
     httpOnly: true,
     secure: configService.isProduction,
-    sameSite: 'lax',
+    sameSite: configService.isProduction ? 'none' : 'lax',
   })
 }
