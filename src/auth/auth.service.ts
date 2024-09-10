@@ -31,6 +31,11 @@ export class AuthService {
       userModel: this.userModel,
     })
 
+    console.log(
+      'this.configService.isProduction :>> ',
+      this.configService.isProduction,
+    )
+
     setRefreshTokenCookie({
       configService: this.configService,
       refresh_token,
