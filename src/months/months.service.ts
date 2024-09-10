@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { getDaysInMonth } from 'src/common/helpers'
 import { IMonthsResponse } from './interfaces'
+import { v4 as uuidv4 } from 'uuid'
 
 interface IMonthsParams {
   monthData: string
@@ -18,10 +19,11 @@ export class MonthsService {
       yearData: Number(yearData),
     })
 
-    const daysList = []
+    const monthsDays = []
 
     for (let index = 1; index <= daysInMonth; index += 1) {
-      daysList.push({
+      monthsDays.push({
+        id: uuidv4(),
         day: index,
         month,
         year,
@@ -30,7 +32,7 @@ export class MonthsService {
 
     return {
       message: `${month} month, ${year} year info`,
-      daysList,
+      monthsDays,
     }
   }
 }

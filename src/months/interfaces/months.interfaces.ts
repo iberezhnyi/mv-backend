@@ -6,5 +6,5 @@ interface IDayInMonth {
 
 export interface IMonthsResponse {
   message: string
-  daysList: IDayInMonth[]
+  monthsDays: IDayInMonth[]
 }

@@ -7,6 +7,7 @@ import {
   buildWeekDays,
   findNotesForWeek,
   findTasksForWeek,
+  getISOWeekNumber,
   getWeekStartAndEnd,
 } from './helpers'
 import { IGetWeekParams, IGetWeekResponse } from './interfaces'
@@ -24,6 +25,7 @@ export class WeeksService {
   async getWeekInfo({ user, date }: IGetWeekParams): Promise<IGetWeekResponse> {
     const { id: ownerId } = user
     const { startOfWeek, endOfWeek } = getWeekStartAndEnd(date)
+    // const weekPerYear = getISOWeekNumber(new Date(date))
 
     const notes = await findNotesForWeek({
       noteModel: this.noteModel,
@@ -47,8 +49,12 @@ export class WeeksService {
       ownerId,
     })
 
+    // const weekPerYear = getWeekNumber(startOfWeek)
+    const weekPerYear = getISOWeekNumber(new Date(date))
+
     return {
       message: `Week from ${startOfWeek} till ${endOfWeek}`,
+      weekPerYear,
       weekDays,
     }
   }

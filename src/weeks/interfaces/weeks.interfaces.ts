@@ -17,5 +17,6 @@ export interface IGetWeekParams {
 
 export interface IGetWeekResponse {
   message: string
+  weekPerYear: number
   weekDays: IWeekDay[]
 }
