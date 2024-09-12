@@ -27,7 +27,7 @@ export const generateAndUpdateTokens = async ({
     throw new InternalServerErrorException()
   }
 
-  await userModel.findByIdAndUpdate(userId, { refresh_token })
+  await userModel.findByIdAndUpdate(userId, { access_token, refresh_token })
 
   return { access_token, refresh_token }
 }

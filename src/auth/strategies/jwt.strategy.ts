@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from 'src/common/configs'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-// import { Request } from 'express'
+import { Request } from 'express'
 import { UserModel } from 'src/users/schemas'
 
 @Injectable()
@@ -19,25 +19,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.jwtSecret,
-      // passReqToCallback: true,
+      passReqToCallback: true,
     })
   }
 
-  async validate(
-    // req: Request,
-    payload: { id: string },
-  ): Promise<UserModel> {
+  async validate(req: Request, payload: { id: string }): Promise<UserModel> {
     const user = await this.userModel.findById(payload.id)
 
     if (user === null) {
       throw new UnauthorizedException('User not found!')
     }
 
-    // const tokenFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken()(req)
+    const tokenFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken()(req)
 
-    // if (user.access_token !== tokenFromRequest) {
-    //   throw new UnauthorizedException('Invalid token')
-    // }
+    if (user.access_token !== tokenFromRequest) {
+      throw new UnauthorizedException('Invalid access token')
+    }
 
     return user
   }

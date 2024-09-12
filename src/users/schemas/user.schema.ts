@@ -30,11 +30,11 @@ export class UserModel extends Document {
   })
   password: string
 
-  // @Prop({
-  //   type: String,
-  //   default: null,
-  // })
-  // access_token: string | null
+  @Prop({
+    type: String,
+    default: null,
+  })
+  access_token: string | null
 
   @Prop({
     type: String,
