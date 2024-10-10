@@ -36,6 +36,7 @@ export const buildWeekDays = ({
     })
 
     const tasksForDay = tasks
+
       .filter((task) => {
         const taskDate = new Date(task.date)
         return (
@@ -43,6 +44,7 @@ export const buildWeekDays = ({
           currentDate.toISOString().slice(0, 10)
         )
       })
+
       .map((task) => {
         const completed = task.completedBy?.get(ownerId) === true
         return {
